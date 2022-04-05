@@ -1,0 +1,128 @@
+---
+title: "Discussion 2 (STA 135)"
+date: "4/5/2022"
+output: html_document
+---
+
+# The air-pollution data set.
+```{r}
+# Read the data 
+air_pollution = read.table('T1-5.dat') # Please set your working directory as your file location
+# Check the data
+colnames(air_pollution) = c('Wind', 'radiation', 'CO', 'NO', 'NO2','O3', 'HC')
+head(air_pollution)
+# Dot plot
+par(mfrow = c(2,4))
+for (i in 1:ncol(air_pollution)){ 
+  dotchart(air_pollution[,i],
+           pch  = 16, 
+           main = colnames(air_pollution)[i])
+}
+```
+
+
+```{r}
+# Calculate the quantities Sn, xbar and R
+Sn = matrix(NA, nrow = ncol(air_pollution), ncol= ncol(air_pollution),dimnames = list(colnames(air_pollution), colnames(air_pollution)) ) 
+n  = nrow(air_pollution)
+xbar = colMeans(air_pollution)
+for (i in 1:ncol(air_pollution)){
+  for (j in 1:ncol(air_pollution)){
+    Sn[i,j] = sum((air_pollution[,i] - xbar[i])*(air_pollution[,j] - xbar[j]))/n
+  }
+}
+var = diag(Sn)
+R   = t(Sn / sqrt(var)) / sqrt(var)
+cat('The covariance matrix Sn is \n')
+print(round(Sn,2))
+cat('The mean vector xbar is \n')
+print(round(xbar,2))
+cat('The correlation matrix R is \n')
+print(round(R,2))
+```
+
+# A synthetic data example
+```{r}
+# Create the data
+x1   = c(-6, -3, -2,  1, 2, 5, 6, 8)
+x2   = c(-2, -3,  1, -1, 2, 1, 5, 3)
+data = cbind(x1, x2)
+colnames(data) = c('x1','x2')
+data
+```
+```{r, echo = FALSE}
+## put histograms on the diagonal of the scatter plot
+## Copied from 'R for Examples E1-5'
+panel.hist <- function(x, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y,  ...)
+}
+```
+
+
+```{r}
+# scatter plot
+pairs(data, pch = 16, diag.panel = panel.hist)
+```
+
+```{r}
+# Calcuate statistics Sn, R, xbar
+# Copied from 'E1-2.tex'
+n        = length(x1)
+xbar1    = sum(x1)/n
+xbar2    = sum(x2)/n
+s11      = sum((x1-xbar1)^2)/n
+s22      = sum((x2-xbar2)^2)/n
+s12      = sum((x1-xbar1)*(x2-xbar2))/n
+Sn       = matrix( c(s11,s12,s12,s22),
+                   nrow=2,ncol=2, 
+                   dimnames = list(c('x1','x2'), c('x1','x2'))) 
+var      = diag(Sn)
+R        = t(Sn / sqrt(var)) / sqrt(var)
+xbar     = c(xbar1, xbar2)
+cat('The covariance matrix Sn is \n')
+print(round(Sn,2))
+cat('The mean vector xbar is \n')
+print(round(xbar,2))
+cat('The correlation matrix R is \n')
+print(round(R,2))
+```
+
+# Table 1.9: National Track Record for Women Data
+```{r}
+data = read.table('T1-9.dat', sep = '\t') # The text in the file was separated using '\t'
+rownames(data) = data[,1]
+data = data[,-1]
+data[4:7] = data[4:7] * 60
+colnames(data) = c('100m', '200m', '400m', '800m', '1500m', '3000m','Marathon')
+head(data)
+# convert the data to be speed
+data = sweep(1/data, 2,c(100,200,400,800,1500,3000, 42195), '*' )
+# Calcuate statistics Sn, R, xbar
+Sn   = matrix(NA, nrow = ncol(data), ncol= ncol(data),
+              dimnames = list(colnames(data), colnames(data))) 
+n    = nrow(data)
+xbar = colMeans(data)
+for (i in 1:ncol(data)){
+  for (j in 1:ncol(data)){
+    Sn[i,j] = sum((data[,i] - xbar[i])*(data[,j] - xbar[j]))/n
+  }
+}
+#calculate R
+var = diag(Sn)
+R   = t(Sn / sqrt(var)) / sqrt(var)
+cat('The covariance matrix Sn is \n')
+print(round(Sn,2))
+cat('The mean vector xbar is \n')
+print(round(xbar,2))
+cat('The correlation matrix R is \n')
+print(round(R,2))
+```
+
+
+
